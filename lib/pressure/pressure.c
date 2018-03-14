@@ -115,12 +115,13 @@ void pressure_init()
 
     bmp280_init(&bmp280);
 
+    bmp280_set_power_mode(BMP280_NORMAL_MODE);
+
     bmp280_set_oversamp_pressure(BMP280_ULTRAHIGHRESOLUTION_OVERSAMP_PRESSURE);
     bmp280_set_oversamp_temperature(BMP280_ULTRAHIGHRESOLUTION_OVERSAMP_TEMPERATURE);
 
     bmp280_set_standby_durn(BMP280_STANDBY_TIME_1_MS);
     bmp280_set_filter(BMP280_FILTER_COEFF_16);
-    bmp280_set_power_mode(BMP280_NORMAL_MODE);
 }
 
 void pressure_task(void *pvParameter)
@@ -136,7 +137,7 @@ void pressure_task(void *pvParameter)
     while (1)
     {
         bmp280_read_pressure_temperature(&pressure, &temp);
-        if (pressure != 0 && temp != 0)
+        if (pressure != 0 && temp != 0 && temp != 2323)
         {
             data->pressure = (double)pressure / 100;
         }

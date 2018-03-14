@@ -1,5 +1,6 @@
 #include "driver/uart.h"
 #include "string.h"
+#include "freertos/task.h"
 #include "co2.h"
 #include "main.h"
 
@@ -70,10 +71,14 @@ void co2_tx_task()
     }
 }
 
-void co2_rx_task(void *pvParameter)
+void co2_task(void *pvParameter)
 {
+    co2_init();
+    xTaskCreate(&co2_tx_task, "co2_tx_task", 2500, NULL, 9, NULL);
+
     struct climateData *data = pvParameter;
     uint8_t *co2_data = (uint8_t *)malloc(RX_BUF_SIZE + 1);
+
     while (1)
     {
         const int rxBytes = uart_read_bytes(UART_NUM_1, co2_data, RX_BUF_SIZE, 100 / portTICK_RATE_MS);

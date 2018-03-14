@@ -10,6 +10,11 @@
         "task.h": "c",
         "co2.h": "c",
         "my_struct.h": "c",
-        "sdkconfig.h": "c"
+        "sdkconfig.h": "c",
+        "esp_event_loop.h": "c",
+        "esp_log.h": "c",
+        "esp_wifi.h": "c",
+        "wifi.h": "c",
+        "nvs_flash.h": "c"
     }
 }
