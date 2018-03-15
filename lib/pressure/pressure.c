@@ -99,6 +99,32 @@ void BMP280_delay_msek(u32 msek)
     vTaskDelay(msek / portTICK_PERIOD_MS);
 }
 
+void logError(int8_t res, char *text)
+{
+    if (res != 0)
+    {
+        printf("Pressure error, res %d: %s\n", res, text);
+    }
+}
+
+void pressure_setup()
+{
+    int8_t res;
+
+    res = bmp280_set_power_mode(BMP280_NORMAL_MODE);
+    logError(res, "bmp280_set_power_mode");
+
+    res = bmp280_set_oversamp_pressure(BMP280_ULTRAHIGHRESOLUTION_OVERSAMP_PRESSURE);
+    logError(res, "bmp280_set_oversamp_pressure");
+    res = bmp280_set_oversamp_temperature(BMP280_ULTRAHIGHRESOLUTION_OVERSAMP_TEMPERATURE);
+    logError(res, "bmp280_set_oversamp_temperature");
+
+    res = bmp280_set_standby_durn(BMP280_STANDBY_TIME_1_MS);
+    logError(res, "bmp280_set_standby_durn");
+    res = bmp280_set_filter(BMP280_FILTER_COEFF_16);
+    logError(res, "bmp280_set_filter");
+}
+
 void pressure_init()
 {
     /*--------------------------------------------------------------------------*
@@ -113,15 +139,10 @@ void pressure_init()
     bmp280.dev_addr = BMP280_I2C_ADDRESS1;
     bmp280.delay_msec = BMP280_delay_msek;
 
-    bmp280_init(&bmp280);
+    int8_t res = bmp280_init(&bmp280);
+    logError(res, "bmp280_init");
 
-    bmp280_set_power_mode(BMP280_NORMAL_MODE);
-
-    bmp280_set_oversamp_pressure(BMP280_ULTRAHIGHRESOLUTION_OVERSAMP_PRESSURE);
-    bmp280_set_oversamp_temperature(BMP280_ULTRAHIGHRESOLUTION_OVERSAMP_TEMPERATURE);
-
-    bmp280_set_standby_durn(BMP280_STANDBY_TIME_1_MS);
-    bmp280_set_filter(BMP280_FILTER_COEFF_16);
+    pressure_setup();
 }
 
 void pressure_task(void *pvParameter)
@@ -132,14 +153,38 @@ void pressure_task(void *pvParameter)
     /* The variable used to read real pressure*/
     uint32_t pressure = BMP280_INIT_VALUE;
 
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
     pressure_init();
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 
     while (1)
     {
-        bmp280_read_pressure_temperature(&pressure, &temp);
+        int8_t res = bmp280_read_pressure_temperature(&pressure, &temp);
+        logError(res, "bmp280_read_pressure_temperature");
+
         if (pressure != 0 && temp != 0 && temp != 2323)
         {
             data->pressure = (double)pressure / 100;
+        }
+        else
+        {
+            s32 v_uncomp_pressure_s32 = BMP280_INIT_VALUE;
+            s32 v_uncomp_temperature_s32 = BMP280_INIT_VALUE;
+            bmp280_read_uncomp_pressure_temperature(
+                &v_uncomp_pressure_s32,
+                &v_uncomp_temperature_s32);
+
+            if (v_uncomp_pressure_s32 == 524288 && v_uncomp_temperature_s32 == 524288)
+            {
+                printf("Resetting BMP280\n");
+                res = bmp280_set_soft_rst();
+                logError(res, "bmp280_set_soft_rst");
+                pressure_setup();
+            }
+            // printf("BMP280: pressure: %7.2f hPa temperature: %.2f C\n", (float)pressure / 100, (float)temp / 100);
+            // printf("BMP280: pressure: %d temperature: %d\n", v_uncomp_pressure_s32, v_uncomp_temperature_s32);
         }
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }

@@ -15,6 +15,7 @@
         "esp_log.h": "c",
         "esp_wifi.h": "c",
         "wifi.h": "c",
-        "nvs_flash.h": "c"
+        "nvs_flash.h": "c",
+        "stdio.h": "c"
     }
 }

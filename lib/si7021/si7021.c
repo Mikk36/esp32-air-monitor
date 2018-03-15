@@ -55,6 +55,8 @@ void temperature_humidity_task(void *pvParameter)
 {
     struct climateData *data = pvParameter;
 
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
     while (1)
     {
         read_temp_rh(&data->temperature, &data->humidity);
