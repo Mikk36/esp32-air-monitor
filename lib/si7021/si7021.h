@@ -10,8 +10,8 @@
 #define USER1_READ 0xE7
 #define USER1_WRITE 0xE6
 
-#define I2C_MASTER_ACK 0
-#define I2C_MASTER_NACK 1
+// #define I2C_MASTER_ACK 0
+// #define I2C_MASTER_NACK 1
 
 void temperature_humidity_task(void *pvParameter);
 

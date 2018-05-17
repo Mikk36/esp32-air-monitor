@@ -6,12 +6,12 @@
 #include "esp_event_loop.h"
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
-static EventGroupHandle_t wifi_event_group;
+extern EventGroupHandle_t wifi_event_group;
 
 /* The event group allows multiple bits for each event,
    but we only care about one event - are we connected
    to the AP with an IP? */
-const int CONNECTED_BIT = BIT0;
+extern const int CONNECTED_BIT;
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
@@ -48,7 +48,7 @@ void initialise_wifi()
     // printf("initialise_wifi step 1\n");
     tcpip_adapter_init();
     // printf("initialise_wifi step 2\n");
-    wifi_event_group = xEventGroupCreate();
+    // wifi_event_group = xEventGroupCreate();
     // printf("initialise_wifi step 3\n");
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
     // printf("initialise_wifi step 4\n");

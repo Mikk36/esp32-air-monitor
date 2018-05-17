@@ -5,3 +5,5 @@
 .travis.yml
 .vscode/*.db
 .vscode/.browse.c_cpp.db*
+
+src/settings.h
