@@ -36,12 +36,14 @@ uint16_t read_value(const uint8_t command)
 void read_humidity(double *humidity)
 {
     uint16_t humiRaw = read_value(RH_READ);
+    printf("humiRaw: %i\n", humiRaw);
     *humidity = (humiRaw * 125.0 / 65536) - 6;
 }
 
 void read_temperature(double *temperature)
 {
     uint16_t tempRaw = read_value(POST_RH_TEMP_READ);
+    printf("tempRaw: %i\n", tempRaw);
     *temperature = (tempRaw * 175.72 / 65536) - 46.85;
 }
 
