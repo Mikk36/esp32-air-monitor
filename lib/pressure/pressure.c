@@ -183,8 +183,6 @@ void pressure_task(void *pvParameter)
                 logError(res, "bmp280_set_soft_rst");
                 pressure_setup();
             }
-            // printf("BMP280: pressure: %7.2f hPa temperature: %.2f C\n", (float)pressure / 100, (float)temp / 100);
-            // printf("BMP280: pressure: %d temperature: %d\n", v_uncomp_pressure_s32, v_uncomp_temperature_s32);
         }
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }

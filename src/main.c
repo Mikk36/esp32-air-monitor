@@ -162,7 +162,7 @@ void postWeatherServer(
 void reporter_task(void *pvParameter)
 {
     struct climateData *data = pvParameter;
-    vTaskDelay(11000 / portTICK_PERIOD_MS);
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
 
     char requestData[300];
     char request[512];
@@ -199,6 +199,10 @@ void app_main()
     xTaskCreate(&pressure_task, "pressure_task", 2500, &data, 10, NULL);
     xTaskCreate(&temperature_humidity_task, "temperature_humidity_task", 2500, &data, 10, NULL);
     xTaskCreate(&co2_task, "co2_task", 2500, &data, 10, NULL);
-    xTaskCreate(&reporter_task, "reporter_task", 20000, &data, 8, NULL);
+    xTaskCreate(&reporter_task, "reporter_task", 10000, &data, 8, NULL);
     xTaskCreate(&wifi_task, "wifi_task", 2500, NULL, 5, NULL);
+
+    while(1) {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
 }

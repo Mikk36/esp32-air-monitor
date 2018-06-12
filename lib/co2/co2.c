@@ -92,11 +92,9 @@ void co2_task(void *pvParameter)
                     printf("CRC error\n");
                     continue;
                 }
-                int co2 = readCO2(co2_data);
+                data->co2 = readCO2(co2_data);
                 // int temp = readTemp(data);
                 // int status = readStatus(data);
-
-                data->co2 = co2;
             }
         }
     }

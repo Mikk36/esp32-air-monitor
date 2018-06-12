@@ -25,6 +25,7 @@
         "net_sockets.h": "c",
         "sntp.h": "c",
         "sntp_opts.h": "c",
-        "platform.h": "c"
+        "platform.h": "c",
+        "string.h": "c"
     }
 }
