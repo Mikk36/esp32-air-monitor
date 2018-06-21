@@ -14,5 +14,6 @@
 // #define I2C_MASTER_NACK 1
 
 void temperature_humidity_task(void *pvParameter);
+void read_temp_rh(double *temperature, double *humidity);
 
 #endif

@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_log.h"
+#include "esp_pm.h"
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "driver/gpio.h"
@@ -187,22 +188,47 @@ void app_main()
 {
     struct climateData data;
 
-    printf("Hello World!\n");
-
     nvs_init();
     i2c_init();
-
     wifi_event_group = xEventGroupCreate();
+    initialise_wifi();
 
-    int led_pin = 2;
-    xTaskCreate(&blink_task, "blink_task", 1000, &led_pin, 5, NULL);
-    xTaskCreate(&pressure_task, "pressure_task", 2500, &data, 10, NULL);
-    xTaskCreate(&temperature_humidity_task, "temperature_humidity_task", 2500, &data, 10, NULL);
-    xTaskCreate(&co2_task, "co2_task", 2500, &data, 10, NULL);
-    xTaskCreate(&reporter_task, "reporter_task", 10000, &data, 8, NULL);
-    xTaskCreate(&wifi_task, "wifi_task", 2500, NULL, 5, NULL);
+    co2_init();
 
-    while(1) {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    start_wifi();
+
+    while (1)
+    {
+        read_pressure(&data);
+        read_temp_rh(&data.temperature, &data.humidity);
+        data.co2 = co2_read();
+
+        // printf("Waking wifi\n");
+        // start_wifi();
+        // wake_wifi();
+
+        char requestData[300];
+        char request[512];
+        postWeatherServer(&data, request, requestData);
+
+        printf(
+            "Temperature: %.2f C Humidity: %.2f %% Pressure: %7.2f hPa CO2: %4d PPM, Free heap: %.1f kB\n",
+            data.temperature,
+            data.humidity,
+            data.pressure,
+            data.co2,
+            (float)esp_get_free_heap_size() / 1024);
+
+        // printf("Sleeping wifi\n");
+        // stop_wifi();
+        sleep_wifi();
+
+        // printf("Entering light sleep\n");
+        // const int wakeup_time_sec = 15;
+        // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 1000000);
+        // // esp_deep_sleep_start();
+        // esp_light_sleep_start();
+
+        vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
 }

@@ -4,6 +4,9 @@
 #include "esp_wifi.h"
 #include "esp_log.h"
 #include "esp_event_loop.h"
+#include "esp_pm.h"
+
+#include "settings.h"
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 extern EventGroupHandle_t wifi_event_group;
@@ -59,8 +62,8 @@ void initialise_wifi()
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = EXAMPLE_WIFI_SSID,
-            .password = EXAMPLE_WIFI_PASS,
+            .ssid = WIFI_SSID,
+            .password = WIFI_PASS,
         },
     };
     ESP_LOGI("wifi", "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
@@ -68,8 +71,6 @@ void initialise_wifi()
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     // printf("initialise_wifi step 8\n");
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
-    // printf("initialise_wifi step 9\n");
-    ESP_ERROR_CHECK(esp_wifi_start());
 }
 
 void scan_networks()
@@ -98,6 +99,25 @@ void scan_networks()
     for (int i = 0; i < ap_num; i++)
         printf("%32s | %7d | %4d | %12s\n", (char *)ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, getAuthModeName(ap_records[i].authmode));
     printf("----------------------------------------------------------------\n");
+}
+
+void start_wifi() {
+    esp_wifi_start();
+    printf("Waiting for WiFi connection\n");
+    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
+    printf("Connected to WiFi\n");
+}
+
+void sleep_wifi() {
+    esp_wifi_set_ps(WIFI_PS_MODEM);
+}
+
+void wake_wifi() {
+    esp_wifi_set_ps(WIFI_PS_NONE);
+}
+
+void stop_wifi() {
+    esp_wifi_stop();
 }
 
 void wifi_task(void *pvParameter)

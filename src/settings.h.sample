@@ -1,4 +1,11 @@
+#ifndef SETTINGS_H_
+#define SETTINGS_H_
+
 // https://github.com/Mikk36/weather-server endpoint
 #define WEB_URL "http://<address>/api/reportData"
 #define WEB_SERVER "<address>"
 #define WEB_PORT "3020"
+#define WIFI_SSID "network_name"
+#define WIFI_PASS "password"
+
+#endif

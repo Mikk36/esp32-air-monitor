@@ -100,3 +100,40 @@ void co2_task(void *pvParameter)
     }
     free(co2_data);
 }
+
+int co2_read()
+{
+    const int len = 9;
+    char cmd[9] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};
+    sendData(cmd, len);
+
+    uint8_t *co2_data = (uint8_t *)malloc(RX_BUF_SIZE + 1);
+
+    int co2;
+
+    while (1)
+    {
+        const int rxBytes = uart_read_bytes(UART_NUM_1, co2_data, RX_BUF_SIZE, 100 / portTICK_RATE_MS);
+        if (rxBytes > 0)
+        {
+            co2_data[rxBytes] = 0;
+            if (rxBytes == 9 && co2_data[1] == 0x86)
+            {
+                if (!checkCRC(co2_data))
+                {
+                    printf("CRC error\n");
+                    continue;
+                }
+                co2 = readCO2(co2_data);
+                break;
+            }
+        }
+        else
+        {
+            sendData(cmd, len);
+        }
+    }
+    free(co2_data);
+
+    return co2;
+}

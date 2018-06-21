@@ -145,6 +145,55 @@ void pressure_init()
     pressure_setup();
 }
 
+void pressure_reset()
+{
+    int8_t res = bmp280_set_soft_rst();
+    logError(res, "bmp280_set_soft_rst");
+    pressure_setup();
+}
+
+void read_pressure(void *pvParameter)
+{
+    struct climateData *data = pvParameter;
+    /* The variable used to read real temperature*/
+    int32_t temp = BMP280_INIT_VALUE;
+    /* The variable used to read real pressure*/
+    uint32_t pressure = BMP280_INIT_VALUE;
+
+    pressure_init();
+
+    while (1)
+    {
+        int8_t res = bmp280_read_pressure_temperature(&pressure, &temp);
+        logError(res, "bmp280_read_pressure_temperature");
+
+        if (pressure != 0 && temp != 0 && temp != 2323)
+        {
+            if (pressure < 75000)
+            {
+                pressure_reset();
+                continue;
+            }
+            data->pressure = (double)pressure / 100;
+            break;
+        }
+        else
+        {
+            s32 v_uncomp_pressure_s32 = BMP280_INIT_VALUE;
+            s32 v_uncomp_temperature_s32 = BMP280_INIT_VALUE;
+            bmp280_read_uncomp_pressure_temperature(
+                &v_uncomp_pressure_s32,
+                &v_uncomp_temperature_s32);
+
+            if (v_uncomp_pressure_s32 == 524288 && v_uncomp_temperature_s32 == 524288)
+            {
+                pressure_reset();
+            }
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+    }
+}
+
 void pressure_task(void *pvParameter)
 {
     struct climateData *data = pvParameter;
@@ -179,9 +228,7 @@ void pressure_task(void *pvParameter)
             if (v_uncomp_pressure_s32 == 524288 && v_uncomp_temperature_s32 == 524288)
             {
                 printf("Resetting BMP280\n");
-                res = bmp280_set_soft_rst();
-                logError(res, "bmp280_set_soft_rst");
-                pressure_setup();
+                pressure_reset();
             }
         }
         vTaskDelay(5000 / portTICK_PERIOD_MS);
