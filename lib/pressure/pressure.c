@@ -171,10 +171,16 @@ void read_pressure(void *pvParameter)
         {
             if (pressure < 75000)
             {
+                printf("Too low pressure: resetting BMP280\n");
                 pressure_reset();
                 continue;
             }
-            data->pressure = (double)pressure / 100;
+            if (pressure < 110000 && pressure > 90000)
+            {
+                data->pressure = (double)pressure / 100;
+            } else {
+                printf("Invalid pressure reading: p: %i t: %i\n", pressure, temp);
+            }
             break;
         }
         else
@@ -213,9 +219,13 @@ void pressure_task(void *pvParameter)
         int8_t res = bmp280_read_pressure_temperature(&pressure, &temp);
         logError(res, "bmp280_read_pressure_temperature");
 
+        printf("Pressure: %i Temp: %i\n", pressure, temp);
         if (pressure != 0 && temp != 0 && temp != 2323)
         {
-            data->pressure = (double)pressure / 100;
+            if (pressure < 110000 && pressure > 90000)
+            {
+                data->pressure = (double)pressure / 100;
+            }
         }
         else
         {

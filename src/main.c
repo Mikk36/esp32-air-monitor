@@ -197,8 +197,10 @@ void app_main()
 
     start_wifi();
 
-    while (1)
+    uint8_t counter = 0;
+    while (counter < 100)
     {
+        counter++;
         read_pressure(&data);
         read_temp_rh(&data.temperature, &data.humidity);
         data.co2 = co2_read();
@@ -231,4 +233,6 @@ void app_main()
 
         vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
+    fflush(stdout);
+    esp_restart();
 }
